@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/login_screen.dart';
+import 'package:iot_flutter_lab1/screens/login_screen.dart';
 
 void main() {
   runApp(const AquariumApp());
