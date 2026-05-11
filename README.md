@@ -22,4 +22,4 @@ Repository for Flutter laboratory works.
 ```bash
 flutter pub get
 flutter run -d chrome
-Validation fixed
+Validation fixedd
