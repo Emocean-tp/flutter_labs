@@ -1,17 +1,25 @@
-# iot_flutter_lab1
+# Flutter Labs
 
-A new Flutter project.
+Repository for Flutter laboratory works.
 
-## Getting Started
+## Lab 1 — Interactive Input Field
 
-This project is a starting point for a Flutter application.
+### Features
+- Flutter StatefulWidget
+- Interactive TextField
+- Counter logic
+- Reset counter with "Avada Kedavra"
+- Flutter analyzer configured
+- GitHub Actions validation
 
-A few resources to get you started if this is your first Flutter project:
+### Technologies
+- Flutter
+- Dart
+- GitHub Actions
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+### Run Project
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+flutter pub get
+flutter run -d chrome
+Validation fixedd

@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
 
   void increaseCounter() {
     setState(() {
-      if (controller.text == "Avada Kedavra") {
+      if (controller.text == 'Avada Kedavra') {
         counter = 0;
       } else {
         counter++;
@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("IoT Flutter Lab 1"),
+        title: const Text('IoT Flutter Lab 1'),
       ),
       body: Center(
         child: Padding(
@@ -54,7 +54,7 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                "Counter: $counter",
+                'Counter: $counter',
                 style: const TextStyle(fontSize: 30),
               ),
 
@@ -64,7 +64,7 @@ class _HomePageState extends State<HomePage> {
                 controller: controller,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: "Enter text",
+                  labelText: 'Enter text',
                 ),
               ),
 
@@ -72,7 +72,7 @@ class _HomePageState extends State<HomePage> {
 
               ElevatedButton(
                 onPressed: increaseCounter,
-                child: const Text("Press"),
+                child: const Text('Press'),
               ),
             ],
           ),
