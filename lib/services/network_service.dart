@@ -7,4 +7,8 @@ class NetworkService {
 
     return !result.contains(ConnectivityResult.none);
   }
+
+  static Stream<List<ConnectivityResult>> connectionStream() {
+    return Connectivity().onConnectivityChanged;
+  }
 }

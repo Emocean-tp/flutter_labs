@@ -81,10 +81,34 @@ class StorageService {
     return prefs.getString('feedingTime');
   }
   static Future<void> clearUserSession() async {
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-  await prefs.setBool('isLoggedIn', false);
-  await prefs.remove('email');
-  await prefs.remove('password');
-}
+    await prefs.setBool('isLoggedIn', false);
+    await prefs.remove('email');
+    await prefs.remove('password');
+  }
+  static Future<void> saveApiAquariumData({
+    required String temperature,
+    required String phLevel,
+    required String lightLevel,
+    required String feedingTime,
+  }) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    await prefs.setString('apiTemperature', temperature);
+    await prefs.setString('apiPhLevel', phLevel);
+    await prefs.setString('apiLightLevel', lightLevel);
+    await prefs.setString('apiFeedingTime', feedingTime);
+  }
+
+  static Future<Map<String, String>> getCachedApiAquariumData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    return {
+      'temperature': prefs.getString('apiTemperature') ?? 'No cached data',
+      'phLevel': prefs.getString('apiPhLevel') ?? 'No cached data',
+      'lightLevel': prefs.getString('apiLightLevel') ?? 'No cached data',
+      'feedingTime': prefs.getString('apiFeedingTime') ?? 'No cached data',
+    };
+  }
 }

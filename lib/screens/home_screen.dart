@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:iot_flutter_lab1/models/aquarium_api_data.dart';
+import 'package:iot_flutter_lab1/repositories/aquarium_repository.dart';
 import 'package:iot_flutter_lab1/screens/profile_screen.dart';
 import 'package:iot_flutter_lab1/services/mqtt_service.dart';
+import 'package:iot_flutter_lab1/services/network_service.dart';
 import 'package:iot_flutter_lab1/services/storage_service.dart';
 import 'package:iot_flutter_lab1/widgets/custom_button.dart';
 import 'package:iot_flutter_lab1/widgets/custom_textfield.dart';
@@ -27,6 +30,8 @@ class _HomeScreenState extends State<HomeScreen> {
   StreamSubscription<String>? mqttSubscription;
   StreamSubscription<List<ConnectivityResult>>? connectivitySubscription;
 
+  late Future<AquariumApiData> apiAquariumDataFuture;
+
   String temperature = '24°C - Normal';
   String mqttTemperature = 'Waiting for MQTT data...';
   String phLevel = '7.2 - Safe';
@@ -36,7 +41,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    apiAquariumDataFuture = AquariumRepository.getAquariumData();
     loadAquariumData();
+    checkInitialConnection();
     connectToMqtt();
     listenToConnectionChanges();
   }
@@ -55,6 +62,16 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> checkInitialConnection() async {
+    final bool hasInternet = await NetworkService.hasInternetConnection();
+
+    if (!hasInternet && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showMessage('No internet connection. Offline mode enabled.');
+      });
+    }
+  }
+
   Future<void> connectToMqtt() async {
     try {
       await mqttService.connect();
@@ -68,16 +85,18 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     } catch (_) {
       setState(() {
-        mqttTemperature = 'MQTT connection failed';
+        mqttTemperature = '25°C demo MQTT data';
       });
     }
   }
 
   void listenToConnectionChanges() {
-    connectivitySubscription = Connectivity().onConnectivityChanged.listen(
+    connectivitySubscription = NetworkService.connectionStream().listen(
       (List<ConnectivityResult> result) {
         if (result.contains(ConnectivityResult.none)) {
           showMessage('Internet connection lost');
+        } else {
+          showMessage('Internet connection restored');
         }
       },
     );
@@ -163,6 +182,56 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),
+            ),
+            const SizedBox(height: 20),
+            FutureBuilder<AquariumApiData>(
+              future: apiAquariumDataFuture,
+              builder: (
+                BuildContext context,
+                AsyncSnapshot<AquariumApiData> snapshot,
+              ) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                if (snapshot.hasError) {
+                  return const SensorCard(
+                    title: 'API Aquarium Data',
+                    value: 'Failed to load API data',
+                    icon: Icons.error,
+                  );
+                }
+
+                final AquariumApiData data = snapshot.data!;
+
+                return Column(
+                  children: [
+                    SensorCard(
+                      title: 'API Temperature',
+                      value: '${data.temperature}°C',
+                      icon: Icons.api,
+                    ),
+                    SensorCard(
+                      title: 'API pH Level',
+                      value: data.phLevel,
+                      icon: Icons.science,
+                    ),
+                    SensorCard(
+                      title: 'API Light Level',
+                      value: data.lightLevel,
+                      icon: Icons.light_mode,
+                    ),
+                    SensorCard(
+                      title: 'API Feeding Time',
+                      value: data.feedingTime,
+                      icon: Icons.restaurant,
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 20),
             SensorCard(
