@@ -1,48 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:iot_flutter_lab1/screens/login_screen.dart';
-import 'package:iot_flutter_lab1/services/storage_service.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:iot_flutter_lab1/cubits/auth_cubit.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
+  Future<void> confirmLogout(BuildContext context) async {
+    final AuthCubit authCubit = context.read<AuthCubit>();
+    final NavigatorState navigator = Navigator.of(context);
 
-class _ProfileScreenState extends State<ProfileScreen> {
-  String username = 'Aquarium owner';
-  String email = 'No email';
-
-  @override
-  void initState() {
-    super.initState();
-    loadUserData();
-  }
-
-  Future<void> loadUserData() async {
-    final String? savedUsername = await StorageService.getUsername();
-    final String? savedEmail = await StorageService.getEmail();
-
-    setState(() {
-      username = savedUsername ?? username;
-      email = savedEmail ?? email;
-    });
-  }
-
-  Future<void> confirmLogout() async {
     final bool? shouldLogout = await showDialog<bool>(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('Logout'),
           content: const Text('Are you sure you want to logout?'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context, false),
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: () => Navigator.pop(context, true),
+              onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('Logout'),
             ),
           ],
@@ -51,67 +30,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (shouldLogout ?? false) {
-      await StorageService.clearUserSession();
-
-      if (!mounted) {
-        return;
-      }
-
-      await Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute<void>(
-          builder: (BuildContext context) => const LoginScreen(),
-        ),
-        (Route<dynamic> route) => false,
-      );
+      await authCubit.logout();
+      navigator.pop();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Aquarium Profile'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: confirmLogout,
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (BuildContext context, AuthState state) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Aquarium Profile'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.logout),
+                onPressed: () => confirmLogout(context),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const Icon(
-              Icons.account_circle,
-              size: 120,
-              color: Colors.cyan,
+          body: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.account_circle,
+                  size: 120,
+                  color: Colors.cyan,
+                ),
+                const SizedBox(height: 20),
+                ListTile(
+                  leading: const Icon(Icons.person),
+                  title: Text(state.username),
+                  subtitle: const Text('Aquarium owner'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.email),
+                  title: Text(state.email),
+                  subtitle: const Text('Registered email'),
+                ),
+                const ListTile(
+                  leading: Icon(Icons.water),
+                  title: Text('Aquarium'),
+                  subtitle: Text('Smart Aquarium #1'),
+                ),
+                const ListTile(
+                  leading: Icon(Icons.wifi),
+                  title: Text('Connection'),
+                  subtitle: Text('Device online'),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: Text(username),
-              subtitle: const Text('Aquarium owner'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.email),
-              title: Text(email),
-              subtitle: const Text('Registered email'),
-            ),
-            const ListTile(
-              leading: Icon(Icons.water),
-              title: Text('Aquarium'),
-              subtitle: Text('Smart Aquarium #1'),
-            ),
-            const ListTile(
-              leading: Icon(Icons.wifi),
-              title: Text('Connection'),
-              subtitle: Text('Device online'),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
