@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iot_flutter_lab1/screens/home_screen.dart';
 import 'package:iot_flutter_lab1/screens/register_screen.dart';
+import 'package:iot_flutter_lab1/services/network_service.dart';
 import 'package:iot_flutter_lab1/services/storage_service.dart';
 import 'package:iot_flutter_lab1/widgets/custom_button.dart';
 import 'package:iot_flutter_lab1/widgets/custom_textfield.dart';
@@ -17,6 +18,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   Future<void> loginUser() async {
+    final bool hasInternet = await NetworkService.hasInternetConnection();
+
+    if (!hasInternet) {
+      showMessage('No internet connection');
+      return;
+    }
+
     final String email = emailController.text.trim();
     final String password = passwordController.text.trim();
 
@@ -29,11 +37,13 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (email == savedEmail && password == savedPassword) {
+      await StorageService.setLoggedIn(true);
+      
       if (!mounted) {
         return;
       }
 
-      await Navigator.push(
+      await Navigator.pushReplacement(
         context,
         MaterialPageRoute<void>(
           builder: (BuildContext context) => const HomeScreen(),

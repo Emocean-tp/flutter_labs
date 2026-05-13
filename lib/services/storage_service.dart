@@ -13,6 +13,18 @@ class StorageService {
     await prefs.setString('password', password);
   }
 
+  static Future<void> setLoggedIn(bool value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    await prefs.setBool('isLoggedIn', value);
+  }
+
+  static Future<bool> isLoggedIn() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    return prefs.getBool('isLoggedIn') ?? false;
+  }
+
   static Future<String?> getUsername() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -68,4 +80,11 @@ class StorageService {
 
     return prefs.getString('feedingTime');
   }
+  static Future<void> clearUserSession() async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  await prefs.setBool('isLoggedIn', false);
+  await prefs.remove('email');
+  await prefs.remove('password');
+}
 }

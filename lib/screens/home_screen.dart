@@ -1,5 +1,9 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:iot_flutter_lab1/screens/profile_screen.dart';
+import 'package:iot_flutter_lab1/services/mqtt_service.dart';
 import 'package:iot_flutter_lab1/services/storage_service.dart';
 import 'package:iot_flutter_lab1/widgets/custom_button.dart';
 import 'package:iot_flutter_lab1/widgets/custom_textfield.dart';
@@ -18,7 +22,13 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController lightController = TextEditingController();
   final TextEditingController feedingController = TextEditingController();
 
+  final MqttService mqttService = MqttService();
+
+  StreamSubscription<String>? mqttSubscription;
+  StreamSubscription<List<ConnectivityResult>>? connectivitySubscription;
+
   String temperature = '24°C - Normal';
+  String mqttTemperature = 'Waiting for MQTT data...';
   String phLevel = '7.2 - Safe';
   String lightLevel = '65% - Day Mode';
   String feedingTime = 'Next feeding: 18:00';
@@ -27,6 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     loadAquariumData();
+    connectToMqtt();
+    listenToConnectionChanges();
   }
 
   Future<void> loadAquariumData() async {
@@ -41,6 +53,34 @@ class _HomeScreenState extends State<HomeScreen> {
       lightLevel = savedLightLevel ?? lightLevel;
       feedingTime = savedFeedingTime ?? feedingTime;
     });
+  }
+
+  Future<void> connectToMqtt() async {
+    try {
+      await mqttService.connect();
+
+      mqttSubscription = mqttService.temperatureStream.listen(
+        (String value) {
+          setState(() {
+            mqttTemperature = '$value°C from MQTT';
+          });
+        },
+      );
+    } catch (_) {
+      setState(() {
+        mqttTemperature = 'MQTT connection failed';
+      });
+    }
+  }
+
+  void listenToConnectionChanges() {
+    connectivitySubscription = Connectivity().onConnectivityChanged.listen(
+      (List<ConnectivityResult> result) {
+        if (result.contains(ConnectivityResult.none)) {
+          showMessage('Internet connection lost');
+        }
+      },
+    );
   }
 
   Future<void> saveData() async {
@@ -88,6 +128,9 @@ class _HomeScreenState extends State<HomeScreen> {
     phController.dispose();
     lightController.dispose();
     feedingController.dispose();
+    mqttSubscription?.cancel();
+    connectivitySubscription?.cancel();
+    mqttService.disconnect();
     super.dispose();
   }
 
@@ -123,7 +166,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 20),
             SensorCard(
-              title: 'Water Temperature',
+              title: 'MQTT Water Temperature',
+              value: mqttTemperature,
+              icon: Icons.cloud_sync,
+            ),
+            SensorCard(
+              title: 'Local Water Temperature',
               value: temperature,
               icon: Icons.thermostat,
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iot_flutter_lab1/screens/login_screen.dart';
 import 'package:iot_flutter_lab1/services/storage_service.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -28,11 +29,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  Future<void> confirmLogout() async {
+    final bool? shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Logout'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldLogout ?? false) {
+      await StorageService.clearUserSession();
+
+      if (!mounted) {
+        return;
+      }
+
+      await Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute<void>(
+          builder: (BuildContext context) => const LoginScreen(),
+        ),
+        (Route<dynamic> route) => false,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Aquarium Profile'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: confirmLogout,
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
