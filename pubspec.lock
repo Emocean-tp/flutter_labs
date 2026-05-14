@@ -381,6 +381,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  smart_aquarium_flashlight:
+    dependency: "direct main"
+    description:
+      path: "../smart_aquarium_flashlight"
+      relative: true
+    source: path
+    version: "0.0.1"
   source_span:
     dependency: transitive
     description:

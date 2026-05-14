@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:iot_flutter_lab1/cubits/auth_cubit.dart';
+import 'package:smart_aquarium_flashlight/smart_aquarium_flashlight.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -32,6 +33,34 @@ class ProfileScreen extends StatelessWidget {
     if (shouldLogout ?? false) {
       await authCubit.logout();
       navigator.pop();
+    }
+  }
+
+  Future<void> toggleFlashlight(BuildContext context) async {
+    try {
+      final bool isOn = await SmartAquariumFlashlight.toggleLight();
+
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isOn ? 'Flashlight enabled' : 'Flashlight disabled',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Flashlight is not supported on this platform'),
+        ),
+      );
     }
   }
 
@@ -78,6 +107,12 @@ class ProfileScreen extends StatelessWidget {
                   leading: Icon(Icons.wifi),
                   title: Text('Connection'),
                   subtitle: Text('Device online'),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: () => toggleFlashlight(context),
+                  icon: const Icon(Icons.flashlight_on),
+                  label: const Text('Secret Flashlight Mode'),
                 ),
               ],
             ),
