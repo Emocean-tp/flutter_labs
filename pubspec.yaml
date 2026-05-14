@@ -39,6 +39,8 @@ dependencies:
   connectivity_plus: ^7.1.1
   http: ^1.6.0
   flutter_bloc: ^9.1.1
+  smart_aquarium_flashlight:
+    path: ../smart_aquarium_flashlight
 
 dev_dependencies:
   flutter_test:
